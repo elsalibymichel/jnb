@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jnb.datastructure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,13 +42,16 @@ import java.util.stream.Stream;
 
 /// An ordered tree with nodes labeled with non-null labels of type `L`.
 ///
+/// A tree is [Serializable] (e.g., for being stored with the `toBase64` function), but the
+/// serialization of a specific tree succeeds only if all its labels are serializable too.
+///
 /// @param label the label of the root node of this tree
 /// @param children the ordered list of trees being children of the root of this tree
 /// @param <L> the type of labels of nodes
 public record Tree<L>(
     L label,
     List<Tree<L>> children
-) implements Sized, Copyable<Tree<L>> {
+) implements Sized, Copyable<Tree<L>>, Serializable {
 
   /// The string used for delimiting the children in the string representation of a tree given by
   /// the [#toString()] method.

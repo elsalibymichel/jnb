@@ -24,6 +24,11 @@ import static org.assertj.core.api.Assertions.*;
 import io.github.ericmedvet.jnb.datastructure.Tree.StringParser;
 import io.github.ericmedvet.jnb.datastructure.Tree.StringParser.Configuration;
 import io.github.ericmedvet.jnb.datastructure.Tree.StringParser.NodeParser;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -213,5 +218,21 @@ class TreeTest {
     assertThat(t("a(b;c(d))").size())
         .as("size of a(b;c(d))")
         .isEqualTo(4);
+  }
+
+  @Test
+  void serialization() throws IOException, ClassNotFoundException {
+    for (String s : List.of("a", "a(b;c)", "a(b;c(d;e);f)")) {
+      Tree<Character> t = t(s);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+        oos.writeObject(t);
+      }
+      try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+        assertThat(ois.readObject())
+            .as("deserialized tree %s equals the original".formatted(s))
+            .isEqualTo(t);
+      }
+    }
   }
 }
