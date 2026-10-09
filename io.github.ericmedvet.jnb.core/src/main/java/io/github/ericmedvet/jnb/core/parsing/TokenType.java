@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum TokenType {
-  NUM("(-?[0-9]+(\\.[0-9]+)?)|(-?Infinity)", "0.0"), I_NUM("[0-9]+", "0"), STRING(
+  NUM("(-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?)|(-?Infinity)", "0.0"), I_NUM("[0-9]+", "0"), STRING(
       "((" + StringParser.PLAIN_STRING_REGEX + ")|(" + StringParser.QUOTED_STRING_REGEX + "))",
       "a|" + StringParser.QUOTED_STRING_BOUNDARY + "a" + StringParser.QUOTED_STRING_BOUNDARY
   ), INTERPOLATED_STRING(

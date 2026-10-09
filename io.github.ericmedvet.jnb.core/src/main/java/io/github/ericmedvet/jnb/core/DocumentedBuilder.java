@@ -21,6 +21,7 @@ package io.github.ericmedvet.jnb.core;
 
 import io.github.ericmedvet.jnb.core.Param.Injection;
 import io.github.ericmedvet.jnb.core.ParamMap.Type;
+import io.github.ericmedvet.jnb.core.parsing.StringParser;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.List;
@@ -70,7 +71,8 @@ public interface DocumentedBuilder<T> extends Builder<T> {
       return Enum.valueOf((Class) clazz, value.toUpperCase());
     }
     if (type.equals(ParamMap.Type.NAMED_PARAM_MAP)) {
-      return value;
+      // a map, not its text: otherwise the default is printed as a quoted string and cannot be read back as a map
+      return value.isEmpty() ? value : StringParser.parse(value);
     }
     if (type.equals(ParamMap.Type.INTS)) {
       return value;
