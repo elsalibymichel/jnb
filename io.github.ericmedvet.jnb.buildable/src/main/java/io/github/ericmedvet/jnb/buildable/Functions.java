@@ -176,6 +176,32 @@ public class Functions {
   }
 
   @Cacheable
+  public static <X> FormattedNamedFunction<X, List<Double>> derivative(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, SortedMap<Double, Double>> beforeF,
+      @Param(value = "abs", dB = true) boolean abs,
+      @Param(value = "maxAbsValue", dD = Double.POSITIVE_INFINITY) double maxAbsValue,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<SortedMap<Double, Double>, List<Double>> f = series -> {
+      List<Double> rates = new ArrayList<>();
+      Double previousT = null;
+      Double previousV = null;
+      for (Entry<Double, Double> e : series.entrySet()) {
+        if (previousT != null) {
+          double rate = (e.getValue() - previousV) / (e.getKey() - previousT);
+          if (Math.abs(rate) <= maxAbsValue) {
+            rates.add(abs ? Math.abs(rate) : rate);
+          }
+        }
+        previousT = e.getKey();
+        previousV = e.getValue();
+      }
+      return rates;
+    };
+    return FormattedNamedFunction.from(f, format, "derivative").compose(beforeF);
+  }
+
+  @Cacheable
   public static <X, T> NamedFunction<X, Set<T>> distinct(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<T>> beforeF,
       @Param(value = "format", dS = "%s") String format
@@ -536,6 +562,19 @@ public class Functions {
   ) {
     Function<Map<String, T>, T> f = m -> m.get(key);
     return FormattedNamedFunction.from(f, format, key).compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X, K, T, R> NamedFunction<X, SortedMap<K, R>> mapValues(
+      @Param("mapF") Function<T, R> mapF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, SortedMap<K, T>> beforeF
+  ) {
+    Function<SortedMap<K, T>, SortedMap<K, R>> f = m -> {
+      SortedMap<K, R> mapped = new TreeMap<>(m.comparator());
+      m.forEach((k, v) -> mapped.put(k, mapF.apply(v)));
+      return mapped;
+    };
+    return NamedFunction.from(f, "map.values[%s]".formatted(NamedFunction.name(mapF))).compose(beforeF);
   }
 
   @Cacheable
